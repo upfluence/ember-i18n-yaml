@@ -1,29 +1,42 @@
-/* jshint node: true */
 'use strict';
 
-var merge = require('deepmerge');
-var I18nYamlCompiler = require('./lib/i18n-yaml-compiler');
+var checker = require('ember-cli-version-checker');
 
 module.exports = {
-  name: 'Ember i18n Yaml',
-  project: this.project,
+  name: 'ember-i18n-yaml',
 
-  i18nYamlConfig: function () {
-    var app = this.app;
-
-    if (app && !app.options && app.app) {
-      app = app.app;
-    }
-
-    return merge({
-        sourceDir: './config/locales',
-        distDir: './app/locales',
-        defaultLocal: 'en'
-      }, (app && app.options.i18nYaml) || {});
+  init: function() {
+    if (this._super.init) { this._super.init.apply(this, arguments); }
+    checker.assertAbove(this, '0.1.2');
   },
 
-  treeForApp: function() {
-    const compiler = new I18nYamlCompiler(this.i18nYamlConfig(), this.ui);
-    compiler.compile();
+  parentRegistry: null,
+
+  shouldSetupRegistryInIncluded: function() {
+    return !checker.isAbove(this, '0.2.0');
+  },
+
+  setupPreprocessorRegistry: function(type, registry) {
+    console.log(type);
+    registry.add('js', {
+      name: 'ember-i18n-yaml',
+      ext: 'yml',
+      _addon: this,
+      toTree: function(tree) {
+        return require('./translation-compiler')(tree, {});
+      }
+    });
+
+    if (type === 'parent') {
+      this.parentRegistry = registry;
+    }
+  },
+
+  included: function (app) {
+    this._super.included.apply(this, arguments);
+
+    if (this.shouldSetupRegistryInIncluded()) {
+      this.setupPreprocessorRegistry('parent', app.registry);
+    }
   }
 };
