@@ -4,20 +4,18 @@ const fs = require('fs');
 const utils = require('./utils');
 const Filter = require('broccoli-persistent-filter');
 
-function TranslationCompiler (inputTree, _options) {
+function TranslationCompiler (inputTree, options) {
   if (!(this instanceof TranslationCompiler)) {
-    return new TranslationCompiler(inputTree, _options);
+    return new TranslationCompiler(inputTree, options);
   }
 
-  var options = _options || {};
   if (!options.hasOwnProperty('persist')) {
     options.persist = true;
   }
 
   Filter.call(this, inputTree, options); // this._super()
 
-  this.options = options || {};
-  this.inputTree = inputTree;
+  this.options = options;
 }
 
 TranslationCompiler.prototype = Object.create(Filter.prototype);
@@ -33,10 +31,8 @@ TranslationCompiler.prototype.canProcessFile = function (relativePath) {
   return relativePath.indexOf('locales/') !== -1;
 };
 
-TranslationCompiler.prototype.processString = function (string, relativePath) {
-  return `define('${relativePath.replace('.yml', '')}', ['exports'], function (exports) {
-  exports['default'] = ${utils.compile(string)};
-});`;
+TranslationCompiler.prototype.processString = function (string) {
+  return `export default ${utils.toJson(string)};`;
 };
 
 TranslationCompiler.prototype.cacheKeyProcessString = function(string, relativePath) {
