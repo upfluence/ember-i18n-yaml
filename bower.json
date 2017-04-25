@@ -1,4 +1,9 @@
 {
   "name": "ember-i18n-yaml",
-  "dependencies": {}
+  "dependencies": {
+    "ember": "canary"
+  },
+  "resolutions": {
+    "ember": "canary"
+  }
 }
