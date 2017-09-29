@@ -28,8 +28,13 @@ TranslationCompiler.prototype.baseDir = function() {
 };
 
 TranslationCompiler.prototype.canProcessFile = function (relativePath) {
-  return relativePath.indexOf('locales/') !== -1;
+  if (relativePath.indexOf('locales/') === -1) {
+    return false;
+  }
+
+  return Filter.prototype.canProcessFile.call(this, relativePath);
 };
+
 
 TranslationCompiler.prototype.processString = function (string) {
   return `export default ${utils.toJson(string)};`;
